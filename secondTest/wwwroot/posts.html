@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Посты</title>
+    <style>
+        td {
+            padding: 5px;
+        }
+
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html">Домой</a>
+    </header>
+    <!--postHashtag authorId postTime postViews postText-->
+    <h2>Список постов</h2>
+    <div>
+        <input type="hidden" id="postId" />
+        <p>
+            Хэштэг:<br />
+            <input id="postHashtag" />
+        </p>
+        <p>
+            Автор ID:<br />
+            <input id="postAuthorId" type="number" />
+        </p>
+        <p>
+            Время:<br />
+            <input id="postTime"/>
+        </p>
+        <p>
+            Количество просмотров:<br />
+            <input id="postViews" type="number" value="0"/>
+        </p>
+        <p>
+            Текст:<br />
+            <input id="postText" />
+        </p>
+        <p>
+            <button id="saveBtn">Сохранить</button>
+            <button id="resetBtn">Сбросить</button>
+        </p>
+    </div>
+    <table>
+        <thead><tr><th>Хэштэг</th><th>ID Автора</th><th>Время</th><th>Количество просмотров</th><th>Текст</th><th></th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        // Получение одного пользователя
+        async function getPost(id) {
+            const response = await fetch(`/api/posts/${id}`, {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const post = await response.json();
+                document.getElementById("postId").value = post.id;
+                document.getElementById("postHashtag").value = post.hashtag;
+                document.getElementById("postAuthorId").value = post.authorId;
+                document.getElementById("postTime").value = post.time;
+                document.getElementById("postViews").value = post.views;
+                document.getElementById("postText").value = post.text;
+            }
+            else {
+                // если произошла ошибка, получаем сообщение об ошибке
+                const error = await response.json();
+                console.log(error.message); // и выводим его на консоль
+            }
+        }
+        // Добавление пользователя
+        async function createPost(postHashtag, postAuthorId, postTime, postViews, postText) {
+
+            const response = await fetch("api/posts", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    hashtag: postHashtag,
+                    authorId: parseInt(postAuthorId, 10),
+                    time: postTime,
+                    views: parseInt(postViews, 10),
+                    text: postText
+                })
+            });
+            if (response.ok === true) {
+                const post = await response.json();
+                document.querySelector("tbody").append(makeRow(post));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Изменение пользователя
+        async function editPost(postId, postHashtag, postAuthorId, postTime, postViews, postText) {
+            const response = await fetch("api/posts", {
+                method: "PUT",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: postId,
+                    hashtag: postHashtag,
+                    authorId: parseInt(postAuthorId, 10),
+                    time: postTime,
+                    views: parseInt(postViews, 10),
+                    text: postText
+                })
+            });
+            if (response.ok === true) {
+                const post = await response.json();
+                document.querySelector(`tr[data-rowid='${post.id}']`).replaceWith(makeRow(post));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+
+        // Удаление пользователя
+        async function deletePost(id) {
+            const response = await fetch(`/api/posts/${id}`, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const post = await response.json();
+                document.querySelector(`tr[data-rowid='${post.id}']`).remove();
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+
+        // Получение всех пользователей и добавление их в таблицу
+        async function showPosts() {
+            reset();
+            // отправляет запрос и получаем ответ
+            const response = await fetch("/api/posts", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                // получаем данные
+                const posts = await response.json();
+                const rows = document.querySelector("tbody");
+                // добавляем полученные элементы в таблицу
+                posts.forEach(post => rows.append(makeRow(post)));
+            }
+        }
+
+        // сброс данных формы после отправки
+        function reset() {
+            document.getElementById("postId").value =
+            document.getElementById("postHashtag").value =
+            document.getElementById("postAuthorId").value =
+            document.getElementById("postText").value = "";
+            document.getElementById("postViews").value = "0";
+            //document.getElementById("postTime").value = Date().toLocaleString();
+            document.getElementById("postTime").value = "";
+        }
+
+        // создание строки для таблицы
+        function makeRow(post) {
+            //postHashtag postAuthorId postTime postViews postText
+
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", post.id);
+
+            const hashtagTd = document.createElement("td");
+            hashtagTd.append(post.hashtag);
+            tr.append(hashtagTd);
+
+            const authorIdTd = document.createElement("td");
+            authorIdTd.append(post.authorId);
+            tr.append(authorIdTd);
+
+            const timeTd = document.createElement("td");
+            timeTd.append(post.time);
+            tr.append(timeTd);
+
+            const viewsTd = document.createElement("td");
+            viewsTd.append(post.views);
+            tr.append(viewsTd);
+
+            const textTd = document.createElement("td");
+            textTd.append(post.text);
+            tr.append(textTd);
+
+            const linksTd = document.createElement("td");
+
+            const editLink = document.createElement("button");
+            editLink.append("Изменить");
+            editLink.addEventListener("click", async () => await getPost(post.id));
+            linksTd.append(editLink);
+
+            const removeLink = document.createElement("button");
+            removeLink.append("Удалить");
+            removeLink.addEventListener("click", async () => await deletePost(post.id));
+
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+
+            return tr;
+        }
+        // сброс значений формы
+        document.getElementById("resetBtn").addEventListener("click", () => reset());
+
+        // отправка формы
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+
+            const id = document.getElementById("postId").value;
+            const hashtag = document.getElementById("postHashtag").value;
+            const authorId = document.getElementById("postAuthorId").value;
+            const time = document.getElementById("postTime").value;
+            const views = document.getElementById("postViews").value;
+            const text = document.getElementById("postText").value;
+
+            if (id === "")
+                await createPost(hashtag, authorId, time, views, text);
+            else
+                await editPost(id, hashtag, authorId, time, views, text);
+            reset();
+        });
+
+        // загрузка пользователей
+        showPosts();
+    </script>
+</body>
+</html>
