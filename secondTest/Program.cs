@@ -1,34 +1,4 @@
-using System.IO;
-using System.Text.RegularExpressions;
-using Azure;
-using Azure.Core;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-
-//var builder = WebApplication.CreateBuilder();
-
-//var app = builder.Build();
-
-//app.MapGet("/", (ApplicationContext db) => db.Users.ToList());
-
-//app.Run();
-
-
-
-// начальные данные
-//List<User> users = new List<User>
-//{
-//    new() { Id = 1, Name = "Tom1", Age = 37 },
-//    new() { Id = 2, Name = "Bob1", Age = 41 },
-//    new() { Id = 3, Name = "Sam1", Age = 24 }
-//};
-//List<User> users = new List<User>
-//{
-//    new() { Id = Guid.NewGuid().ToString(), Name = "Tom1", Age = 37 },
-//    new() { Id = Guid.NewGuid().ToString(), Name = "Bob1", Age = 41 },
-//    new() { Id = Guid.NewGuid().ToString(), Name = "Sam1", Age = 24 }
-//};
 
 var builder = WebApplication.CreateBuilder();
 
@@ -39,7 +9,6 @@ var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
-//app.MapGet("/", (ApplicationContext db) => db.Users.ToList());
 
 app.Map("/time", appBuilder =>
 {
@@ -104,8 +73,6 @@ app.Map("/index.html", appBuilder =>
     );
 }
 );
-
-//app.MapGet("/api/users", () => users);
 
 //---------------------------------------------------------------------------------------------
 
@@ -216,7 +183,7 @@ app.MapGet("/api/posts", async (ApplicationContext db) =>
     {
         Console.WriteLine($"{p.Id} {p.Hashtag} {p.AuthorId}");
     }
-    //await db.Users.ToListAsync();
+    //await db.Posts.ToListAsync();
     return Results.Json(posts);
 }
 );

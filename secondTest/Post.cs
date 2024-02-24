@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-public class Post
+﻿public class Post
 {
     public int Id { get; set; }
     public int AuthorId { get; set; }
